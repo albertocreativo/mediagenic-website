@@ -81,6 +81,8 @@ const placeholderCells = [
 ];
 
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return workItems.map((item) => ({ slug: item.slug }));
 }
