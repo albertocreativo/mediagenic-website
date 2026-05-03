@@ -1,5 +1,4 @@
-import fs from 'fs';
-import path from 'path';
+import { list } from '@vercel/blob';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -48,18 +47,17 @@ export default async function WorkItem({ params }: { params: Promise<{ slug: str
   const item = workItems.find((w) => w.slug === slug);
   if (!item) notFound();
 
-  // Load real photos from public/work/{slug}/ if folder exists
-  const photoDir = path.join(process.cwd(), 'public', 'work', slug);
+  // Load photos from Vercel Blob
   let projectPhotos: string[] = [];
 
   try {
-    const files = fs
-      .readdirSync(photoDir)
-      .filter((f) => /\.(jpe?g|png|webp|avif)$/i.test(f))
-      .sort();
-    projectPhotos = files.map((f) => `/work/${slug}/${f}`);
+    const { blobs } = await list({ prefix: `${slug}/` });
+    projectPhotos = blobs
+      .filter((b) => /\.(jpe?g|png|webp|avif)$/i.test(b.pathname))
+      .sort((a, b) => a.pathname.localeCompare(b.pathname))
+      .map((b) => b.url);
   } catch {
-    // No folder — fall back to placeholders
+    // Blob not configured or no photos — fall back to placeholders
   }
 
   const hasRealPhotos = projectPhotos.length > 0;
