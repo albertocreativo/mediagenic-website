@@ -149,10 +149,10 @@ const related = workItems.filter((w) => w.slug !== slug);
         )}
 
         {hasRealPhotos ? (
-          <div className="columns-2 md:columns-3 gap-1 md:gap-2">
+          <div className="columns-2 md:columns-3 gap-2 md:gap-3">
             {projectPhotos.map((src) => (
-              <div key={src} className="break-inside-avoid mb-1 md:mb-2">
-                <img src={src} alt="" className="w-full block" loading="lazy" />
+              <div key={src} className="break-inside-avoid mb-2 md:mb-3">
+                <img src={src} alt="" className="w-full block rounded-lg" loading="lazy" />
               </div>
             ))}
           </div>
