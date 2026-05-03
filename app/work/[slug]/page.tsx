@@ -36,11 +36,7 @@ const placeholderCells = [
 ];
 
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return workItems.map((item) => ({ slug: item.slug }));
-}
+export const dynamic = 'force-dynamic';
 
 export default async function WorkItem({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
