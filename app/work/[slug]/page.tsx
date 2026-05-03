@@ -1,52 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { imageSize } from 'image-size';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { JustifiedPhotoGrid } from '@/components/ui/photo-lightbox';
-
-// Justified layout: pack photos into rows so each row fills the full width.
-// targetHeight = desired row height in px (at full container width).
-// Returns rows where each cell has { src, widthPct, w, h } for correct aspect-ratio.
-type JustifiedCell = { src: string; widthPct: number; w: number; h: number };
-
-function justifyPhotos(
-  photos: { src: string; w: number; h: number }[],
-  targetHeight: number,
-  gap: number,
-  containerWidth: number,
-  maxPerRow = Infinity,
-): JustifiedCell[][] {
-  const rows: JustifiedCell[][] = [];
-  let row: { src: string; ar: number; w: number; h: number }[] = [];
-
-  for (const p of photos) {
-    const ar = p.w / p.h;
-    row.push({ src: p.src, ar, w: p.w, h: p.h });
-
-    const totalWidth =
-      row.reduce((sum, r) => sum + r.ar * targetHeight, 0) + gap * (row.length - 1);
-
-    if (totalWidth >= containerWidth || row.length >= maxPerRow) {
-      const totalAr = row.reduce((sum, r) => sum + r.ar, 0);
-      rows.push(
-        row.map((r) => ({ src: r.src, widthPct: (r.ar / totalAr) * 100, w: r.w, h: r.h })),
-      );
-      row = [];
-    }
-  }
-
-  // Last partial row — don't stretch, just show at natural proportions
-  if (row.length > 0) {
-    const totalAr = row.reduce((sum, r) => sum + r.ar, 0);
-    rows.push(
-      row.map((r) => ({ src: r.src, widthPct: (r.ar / totalAr) * 100, w: r.w, h: r.h })),
-    );
-  }
-
-  return rows;
-}
 
 type VideoEntry = { platform: 'youtube'; id: string; vertical?: boolean } | { platform: 'vimeo'; id: string; vertical?: boolean };
 
@@ -95,32 +51,13 @@ export default async function WorkItem({ params }: { params: Promise<{ slug: str
   // Load real photos from public/work/{slug}/ if folder exists
   const photoDir = path.join(process.cwd(), 'public', 'work', slug);
   let projectPhotos: string[] = [];
-  let justifiedRows: JustifiedCell[][] = [];
-  let mobilJustifiedRows: JustifiedCell[][] = [];
 
   try {
     const files = fs
       .readdirSync(photoDir)
       .filter((f) => /\.(jpe?g|png|webp|avif)$/i.test(f))
       .sort();
-
     projectPhotos = files.map((f) => `/work/${slug}/${f}`);
-
-    // Read dimensions for justified layout
-    const photosWithDims = files.map((f) => {
-      try {
-        const buf = fs.readFileSync(path.join(photoDir, f));
-        const dims = imageSize(buf);
-        return { src: `/work/${slug}/${f}`, w: dims.width ?? 4, h: dims.height ?? 3 };
-      } catch {
-        return { src: `/work/${slug}/${f}`, w: 4, h: 3 };
-      }
-    });
-
-    // Desktop: 1200px container, 320px target row height
-    justifiedRows = justifyPhotos(photosWithDims, 320, 4, 1200);
-    // Mobile: 375px container, 120px target row height, max 3 per row
-    mobilJustifiedRows = justifyPhotos(photosWithDims, 120, 4, 375, 3);
   } catch {
     // No folder — fall back to placeholders
   }
@@ -218,7 +155,13 @@ const related = workItems.filter((w) => w.slug !== slug);
         )}
 
         {hasRealPhotos ? (
-          <JustifiedPhotoGrid rows={justifiedRows} mobileRows={mobilJustifiedRows} />
+          <div className="columns-2 md:columns-3 gap-1 md:gap-2">
+            {projectPhotos.map((src) => (
+              <div key={src} className="break-inside-avoid mb-1 md:mb-2">
+                <img src={src} alt="" className="w-full block" loading="lazy" />
+              </div>
+            ))}
+          </div>
         ) : !item.hideGrid ? (
           /* Placeholder grid for projects without photos yet */
           <div className="grid gap-2 md:gap-3" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
