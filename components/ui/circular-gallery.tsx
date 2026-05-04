@@ -79,7 +79,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         if (touchStartXRef.current === null) return;
         const deltaX = e.touches[0].clientX - touchStartXRef.current;
         touchStartXRef.current = e.touches[0].clientX;
-        setRotation(prev => prev - deltaX * 0.4);
+        setRotation(prev => prev + deltaX * 0.4);
       };
 
       const onTouchEnd = () => {
@@ -138,7 +138,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
           if (!isDraggingRef.current || mousePrevXRef.current === null) return;
           const deltaX = e.clientX - mousePrevXRef.current;
           mousePrevXRef.current = e.clientX;
-          setRotation(prev => prev - deltaX * 0.3);
+          setRotation(prev => prev + deltaX * 0.3);
         }}
         onMouseUp={() => {
           isDraggingRef.current = false;
