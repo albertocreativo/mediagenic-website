@@ -2,6 +2,7 @@ import { list } from '@vercel/blob';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import PhotoGallery from '@/components/photo-gallery';
 
 type VideoEntry = { platform: 'youtube'; id: string; vertical?: boolean } | { platform: 'vimeo'; id: string; vertical?: boolean };
 
@@ -149,13 +150,7 @@ const related = workItems.filter((w) => w.slug !== slug);
         )}
 
         {hasRealPhotos ? (
-          <div className="columns-2 md:columns-3 gap-2 md:gap-3">
-            {projectPhotos.map((src) => (
-              <div key={src} className="break-inside-avoid mb-2 md:mb-3">
-                <img src={src} alt="" className="w-full block rounded-lg" loading="lazy" />
-              </div>
-            ))}
-          </div>
+          <PhotoGallery photos={projectPhotos} />
         ) : !item.hideGrid ? (
           /* Placeholder grid for projects without photos yet */
           <div className="grid gap-2 md:gap-3" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
